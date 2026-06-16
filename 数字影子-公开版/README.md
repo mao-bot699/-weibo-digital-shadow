@@ -216,16 +216,27 @@ streamlit run app.py
 ├── main.py            # 命令行工具
 ├── agent.py           # LLM 分析模块
 ├── scrapers.py        # 微博爬虫 + 数据清洗
-├── config.py          # Cookie 配置（需自行填入）
+├── config.py.example  # Cookie 配置模板（需复制为 config.py）
 ├── test_scrapers.py   # 爬虫单元测试
+├── docs/
+│   ├── USAGE.md       # 📖 详细使用指南
+│   └── CHANGELOG.md   # 版本更新日志
 ├── templates/
 │   └── index.html     # 前端页面（单文件 SPA）
 ├── static/            # 静态资源
-├── exports/           # 报告导出目录
-├── docs/              # 项目文档
-│   └── CHANGELOG.md   # 版本更新日志
 └── README.md          # 项目说明
 ```
+
+## 详细使用指南
+
+👉 **[docs/USAGE.md](docs/USAGE.md)** — 从获取 Cookie 到完成第一次分析的完整手把手教程
+
+内容包括：
+- 如何获取微博 Cookie（图文步骤）
+- 如何获取 LLM API Key
+- 三种使用方式（Web / 命令行 / Streamlit）的详细操作
+- 每个功能的具体用法和示例
+- 常见问题解答
 
 ## 注意事项
 
