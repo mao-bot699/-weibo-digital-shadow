@@ -1,0 +1,30 @@
+<svg width="1200" height="675" viewBox="0 0 1200 675" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="675" fill="#0F0F1A"/>
+  <rect x="72" y="62" width="1056" height="551" rx="22" fill="#151A2F" stroke="#2A2A4A" stroke-width="2"/>
+  <rect x="72" y="62" width="1056" height="98" rx="22" fill="#17264A"/>
+  <text x="120" y="123" fill="#F4F5FF" font-family="Arial, sans-serif" font-size="38" font-weight="700">数字影子</text>
+  <text x="296" y="123" fill="#8F8AFF" font-family="Arial, sans-serif" font-size="22">公开微博数据的 AI 数字画像分析工具</text>
+  <rect x="120" y="206" width="390" height="72" rx="12" fill="#1E2A45" stroke="#34395E"/>
+  <text x="146" y="250" fill="#A9AECF" font-family="Arial, sans-serif" font-size="22">输入微博 UID</text>
+  <rect x="530" y="206" width="150" height="72" rx="12" fill="#6C63FF"/>
+  <text x="566" y="250" fill="white" font-family="Arial, sans-serif" font-size="22" font-weight="700">开始分析</text>
+  <rect x="120" y="326" width="280" height="218" rx="16" fill="#16213E" stroke="#2A2A4A"/>
+  <text x="148" y="368" fill="#00D4AA" font-family="Arial, sans-serif" font-size="20" font-weight="700">人物画像</text>
+  <text x="148" y="408" fill="#E0E0F0" font-family="Arial, sans-serif" font-size="18">性格特征</text>
+  <rect x="148" y="426" width="204" height="10" rx="5" fill="#6C63FF"/>
+  <text x="148" y="468" fill="#E0E0F0" font-family="Arial, sans-serif" font-size="18">兴趣领域</text>
+  <rect x="148" y="486" width="156" height="10" rx="5" fill="#FFD93D"/>
+  <rect x="450" y="326" width="280" height="218" rx="16" fill="#16213E" stroke="#2A2A4A"/>
+  <text x="478" y="368" fill="#FFD93D" font-family="Arial, sans-serif" font-size="20" font-weight="700">互动关系图谱</text>
+  <circle cx="590" cy="446" r="34" fill="#6C63FF"/>
+  <circle cx="524" cy="492" r="22" fill="#00D4AA"/>
+  <circle cx="662" cy="492" r="22" fill="#FF6B6B"/>
+  <path d="M564 466L542 482M617 467L646 482" stroke="#8B90B5" stroke-width="4" stroke-linecap="round"/>
+  <rect x="780" y="326" width="280" height="218" rx="16" fill="#16213E" stroke="#2A2A4A"/>
+  <text x="808" y="368" fill="#FF6B6B" font-family="Arial, sans-serif" font-size="20" font-weight="700">多平台线索</text>
+  <rect x="808" y="410" width="188" height="34" rx="8" fill="#1E2A45"/>
+  <text x="826" y="433" fill="#E0E0F0" font-family="Arial, sans-serif" font-size="16">Twitter / X</text>
+  <rect x="808" y="464" width="148" height="34" rx="8" fill="#1E2A45"/>
+  <text x="826" y="487" fill="#E0E0F0" font-family="Arial, sans-serif" font-size="16">Bilibili</text>
+  <text x="120" y="584" fill="#8888AA" font-family="Arial, sans-serif" font-size="18">输入 UID -> 获取公开微博 -> 生成 11 维度报告 -> 导出 / 追问 / 补充分析</text>
+</svg>
