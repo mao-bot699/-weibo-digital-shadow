@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数字影子 - 测试</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: #0f0f1a; color: #e0e0f0; padding: 30px; }
+.card { background: #16213e; border: 1px solid #2a2a4a; border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+input[type=text] { flex: 1; background: #1e2a45; border: 1px solid #2a2a4a; border-radius: 8px; padding: 12px 16px; color: #e0e0f0; font-size: 16px; outline: none; }
+input[type=text]:focus { border-color: #6c63ff; }
+button { padding: 12px 24px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; background: #6c63ff; color: #fff; }
+button:hover { background: #7b73ff; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+#alert { display: none; padding: 14px; border-radius: 8px; margin-bottom: 16px; background: rgba(255,107,107,0.15); border: 1px solid rgba(255,107,107,0.3); color: #ff6b6b; }
+.user-card { display: flex; align-items: center; gap: 16px; padding: 16px; background: #1e2a45; border-radius: 10px; margin-top: 16px; }
+.avatar { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #6c63ff, #e040fb); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; color: #fff; }
+.step { display: none; }
+.step.visible { display: block; }
+</style>
+</head>
+<body>
+<h1>🕵️ 数字影子 - 前端测试</h1>
+<div id="alert"></div>
+
+<div class="card" id="step1">
+  <h2>选择目标用户</h2>
+  <p style="color:#8888aa;margin:10px 0">输入微博 UID（纯数字）</p>
+  <div style="display:flex;gap:10px;margin-top:10px">
+    <input type="text" id="uidInput" placeholder="例如：1749127163">
+    <button type="button" id="uidBtn" onclick="loadUser()">确认</button>
+  </div>
+  <div id="userPreview"></div>
+</div>
+
+<div class="card step" id="step2">
+  <h2>分析参数</h2>
+  <p>微博数：<span id="maxVal">20</span>
+    <input type="range" id="maxPosts" min="5" max="100" step="5" value="20" oninput="document.getElementById('maxVal').textContent=this.value">
+  </p>
+  <button id="analyzeBtn" onclick="startAnalysis()" style="margin-top:16px;width:100%;padding:16px;font-size:18px">生成数字影子报告</button>
+  <div id="progressArea" style="display:none;margin-top:16px">
+    <div style="width:100%;height:6px;background:#2a2a4a;border-radius:3px;overflow:hidden">
+      <div id="progressFill" style="width:0%;height:100%;background:linear-gradient(90deg,#6c63ff,#e040fb);transition:width 0.3s"></div>
+    </div>
+    <p id="progressText" style="text-align:center;margin-top:8px;color:#8888aa;font-size:14px">准备中...</p>
+  </div>
+</div>
+
+<div class="card step" id="step3">
+  <h2>分析报告</h2>
+  <div id="reportMeta"></div>
+  <div id="reportContent" style="line-height:1.9;margin-top:16px"></div>
+  <button onclick="downloadReport()" style="width:100%;margin-top:20px;padding:14px">下载报告</button>
+</div>
+
+<script>
+const API = "http://localhost:8080/api";
+let selectedUser = null;
+let currentReport = "";
+
+function showAlert(msg) {
+    const el = document.getElementById("alert");
+    el.textContent = msg;
+    el.style.display = "block";
+    setTimeout(() => el.style.display = "none", 5000);
+}
+
+function showStep(n) {
+    document.querySelectorAll(".step").forEach((el, i) => {
+        el.classList.toggle("visible", i >= n - 1);
+    });
+}
+
+function setProgress(pct, text) {
+    document.getElementById("progressFill").style.width = pct + "%";
+    document.getElementById("progressText").textContent = text;
+}
+
+// ========== 加载用户 ==========
+async function loadUser() {
+    console.log("loadUser called");
+    const raw = document.getElementById("uidInput").value.trim();
+    console.log("Input value:", raw);
+
+    const m = raw.match(/\d{5,}/);
+    const uid = m ? m[0] : raw;
+
+    if (!uid || !/^\d+$/.test(uid)) {
+        showAlert("请输入有效的微博 UID（纯数字），例如：1749127163");
+        return;
+    }
+
+    const btn = document.getElementById("uidBtn");
+    btn.disabled = true;
+    btn.textContent = "加载中...";
+    document.getElementById("userPreview").innerHTML = "";
+
+    try {
+        console.log("Fetching user info for:", uid);
+        const r = await fetch(API + "/user_info", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({uid})
+        });
+        const d = await r.json();
+        console.log("User info response:", d);
+        if (d.ok) {
+            selectedUser = { uid: uid, screen_name: d.data.screen_name, description: d.data.description, followers_count: d.data.followers_count, statuses_count: d.data.statuses_count };
+            document.getElementById("userPreview").innerHTML =
+                '<div class="user-card"><div class="avatar">' + selectedUser.screen_name.charAt(0) + '</div>' +
+                '<div><strong>' + selectedUser.screen_name + '</strong><br>' +
+                '<small style="color:#8888aa">' + (selectedUser.followers_count || 0).toLocaleString() + ' 粉丝 · ' + (selectedUser.statuses_count || 0).toLocaleString() + ' 微博</small></div></div>';
+            showStep(1);
+        } else {
+            showAlert(d.error || "获取用户信息失败");
+        }
+    } catch(e) {
+        showAlert("请求失败：" + e.message);
+        console.error(e);
+    }
+    btn.disabled = false;
+    btn.textContent = "确认";
+}
+
+// ========== 开始分析 ==========
+async function startAnalysis() {
+    if (!selectedUser) { showAlert("请先选择用户"); return; }
+
+    const maxPosts = parseInt(document.getElementById("maxPosts").value);
+    const btn = document.getElementById("analyzeBtn");
+    btn.disabled = true;
+    btn.textContent = "分析中...";
+    showStep(1);
+    setProgress(10, "正在获取微博...");
+
+    try {
+        // 1. Get posts
+        const r1 = await fetch(API + "/posts", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({uid: selectedUser.uid, max_posts: maxPosts})
+        });
+        const d1 = await r1.json();
+        if (!d1.ok) throw new Error(d1.error);
+        const posts = d1.data;
+        setProgress(30, "获取到 " + posts.length + " 条微博，正在生成报告（约1分钟）...");
+
+        // 2. Get full user info
+        const r2 = await fetch(API + "/user_info", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({uid: selectedUser.uid})
+        });
+        const d2 = await r2.json();
+        if (!d2.ok) throw new Error(d2.error);
+        const userInfo = d2.data;
+
+        // 3. Analyze
+        setProgress(50, "AI 正在深度分析中...");
+        const r3 = await fetch(API + "/analyze", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({user_info: userInfo, posts: posts})
+        });
+        const d3 = await r3.json();
+        if (!d3.ok) throw new Error(d3.error);
+
+        const report = d3.data;
+        currentReport = report;
+        setProgress(100, "完成！");
+
+        // 4. Show report
+        setTimeout(() => {
+            document.getElementById("reportMeta").innerHTML =
+                '<p><strong>' + userInfo.screen_name + '</strong> | ' +
+                (userInfo.followers_count || 0).toLocaleString() + ' 粉丝 | ' +
+                posts.length + ' 条微博</p>';
+            document.getElementById("reportContent").innerHTML = simpleMD(report);
+            showStep(2);
+        }, 300);
+
+    } catch(e) {
+        showAlert("分析失败：" + e.message);
+        console.error(e);
+    }
+    btn.disabled = false;
+    btn.textContent = "生成数字影子报告";
+}
+
+// ========== 下载报告 ==========
+async function downloadReport() {
+    if (!currentReport || !selectedUser) { showAlert("请先生成报告"); return; }
+    try {
+        const r = await fetch(API + "/export", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({user_info: {...selectedUser, id: selectedUser.uid}, posts: [], report: currentReport})
+        });
+        if (!r.ok) throw new Error("导出失败");
+        const blob = await r.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "数字影子_" + selectedUser.screen_name + ".txt";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    } catch(e) {
+        showAlert("下载失败：" + e.message);
+    }
+}
+
+// ========== 简易 Markdown 渲染 ==========
+function simpleMD(text) {
+    if (!text) return "";
+    let h = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+        .replace(/```[\s\S]*?```/g, m => '<pre style="background:#1e2a45;padding:12px;border-radius:8px;overflow-x:auto;font-size:13px">' + m.replace(/```\w*\n?/g, "") + "</pre>")
+        .replace(/`([^`]+)`/g, '<code style="background:#1e2a45;padding:2px 6px;border-radius:4px;font-size:13px">$1</code>')
+        .replace(/^### (.+)$/gm, "<h3>$1</h3>")
+        .replace(/^## (.+)$/gm, "<h2 style='color:#b0b0d0;margin:16px 0 8px'>$1</h2>")
+        .replace(/^# (.+)$/gm, "<h1 style='color:#6c63ff;margin:16px 0'>$1</h1>")
+        .replace(/^---$/gm, "<hr style='border-color:#2a2a4a;margin:16px 0'>")
+        .replace(/\*\*(.+?)\*\*/g, "<strong style='color:#d0d0ff'>$1</strong>")
+        .replace(/^- (.+)$/gm, "<li>$1</li>")
+        .replace(/^\d+\. (.+)$/gm, "<li>$1</li>")
+        .replace(/\n\n/g, "</p><p>")
+        .replace(/\n/g, "<br>");
+    h = h.replace(/((?:<li>.*?<\/li>(?:<br>)?)+)/g, m => "<ul style='margin:8px 0 12px 20px'>" + m.replace(/<br>/g, "") + "</ul>");
+    return "<p>" + h + "</p>";
+}
+</script>
+</body>
+</html>

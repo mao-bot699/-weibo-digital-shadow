@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数字影子</title>
+    <style>
+        /* ===== CSS Reset & Base ===== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg-primary: #0f0f1a;
+            --bg-secondary: #1a1a2e;
+            --bg-card: #16213e;
+            --bg-input: #1e2a45;
+            --border: #2a2a4a;
+            --text-primary: #e0e0f0;
+            --text-secondary: #8888aa;
+            --accent: #6c63ff;
+            --accent-hover: #7b73ff;
+            --accent-glow: rgba(108, 99, 255, 0.3);
+            --success: #00d4aa;
+            --error: #ff6b6b;
+            --warning: #ffd93d;
+            --radius: 12px;
+            --shadow: 0 4px 24px rgba(0,0,0,0.3);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                         "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* ===== Header ===== */
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            padding: 40px 20px 32px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+        .header::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 50% 80%, var(--accent-glow) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: 4px;
+            position: relative;
+        }
+        .header h1 span { color: var(--accent); }
+        .header p {
+            color: var(--text-secondary);
+            margin-top: 8px;
+            font-size: 0.95rem;
+            position: relative;
+        }
+
+        /* ===== Layout ===== */
+        .container {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 32px 20px 60px;
+        }
+
+        /* ===== Cards ===== */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow);
+            transition: border-color 0.3s;
+        }
+        .card:hover { border-color: rgba(108,99,255,0.3); }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card-title .icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+        .icon-blue { background: rgba(108,99,255,0.15); color: var(--accent); }
+        .icon-green { background: rgba(0,212,170,0.15); color: var(--success); }
+        .icon-yellow { background: rgba(255,217,61,0.15); color: var(--warning); }
+        .icon-red { background: rgba(255,107,107,0.15); color: var(--error); }
+
+        /* ===== Input ===== */
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+        input[type="text"], textarea {
+            flex: 1;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            font-family: inherit;
+        }
+        input[type="text"]:focus, textarea:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        input::placeholder, textarea::placeholder { color: var(--text-secondary); }
+
+        textarea { resize: vertical; min-height: 80px; }
+
+        /* ===== Buttons ===== */
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+        }
+        .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+        .btn-primary:active { transform: translateY(0); }
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-outline {
+            background: transparent;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+        }
+        .btn-outline:hover { background: rgba(108,99,255,0.1); }
+
+        /* ===== Slider ===== */
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .slider-row label { font-size: 0.9rem; color: var(--text-secondary); white-space: nowrap; }
+        .slider-row .val {
+            font-weight: 700;
+            color: var(--accent);
+            min-width: 28px;
+            text-align: center;
+        }
+        input[type="range"] {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--border);
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px; height: 20px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            box-shadow: 0 0 8px var(--accent-glow);
+        }
+
+        /* ===== User list ===== */
+        .user-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: border-color 0.2s;
+        }
+        .user-item:hover { border-color: var(--accent); }
+        .user-avatar {
+            width: 48px; height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #e040fb);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        .user-info { flex: 1; min-width: 0; }
+        .user-name { font-weight: 700; font-size: 1rem; }
+        .user-desc {
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .user-stats {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        /* ===== Progress ===== */
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 12px 0;
+        }
+        .progress-bar .fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), #e040fb);
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+        .progress-text {
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        /* ===== Status ===== */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .badge-success { background: rgba(0,212,170,0.15); color: var(--success); }
+        .badge-error { background: rgba(255,107,107,0.15); color: var(--error); }
+        .badge-info { background: rgba(108,99,255,0.15); color: var(--accent); }
+
+        /* ===== Report ===== */
+        .report-meta {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .meta-item {
+            background: var(--bg-input);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
+        .meta-item span { color: var(--text-secondary); }
+
+        .report-content {
+            line-height: 1.9;
+            font-size: 0.95rem;
+        }
+        .report-content h1 { font-size: 1.5rem; margin: 20px 0 12px; color: var(--accent); }
+        .report-content h2 { font-size: 1.2rem; margin: 18px 0 10px; color: #b0b0d0; }
+        .report-content h3 { font-size: 1.05rem; margin: 14px 0 8px; color: #c0c0e0; }
+        .report-content p { margin-bottom: 10px; }
+        .report-content ul, .report-content ol {
+            margin: 8px 0 12px 20px;
+        }
+        .report-content li { margin-bottom: 4px; }
+        .report-content strong { color: #d0d0ff; }
+        .report-content blockquote {
+            border-left: 3px solid var(--accent);
+            padding: 8px 16px;
+            margin: 12px 0;
+            background: rgba(108,99,255,0.05);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-secondary);
+        }
+        .report-content hr {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 20px 0;
+        }
+
+        /* ===== Post preview ===== */
+        .post-item {
+            padding: 12px 16px;
+            background: var(--bg-input);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 3px solid var(--border);
+        }
+        .post-meta {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+        .post-text { font-size: 0.9rem; line-height: 1.6; }
+
+        /* ===== Footer ===== */
+        .footer {
+            text-align: center;
+            padding: 24px;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            border-top: 1px solid var(--border);
+        }
+
+        /* ===== Loading spinner ===== */
+        .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ===== Alert / Toast ===== */
+        .alert {
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            font-size: 0.9rem;
+            display: none;
+        }
+        .alert-error {
+            background: rgba(255,107,107,0.1);
+            border: 1px solid rgba(255,107,107,0.3);
+            color: var(--error);
+        }
+        .alert-success {
+            background: rgba(0,212,170,0.1);
+            border: 1px solid rgba(0,212,170,0.3);
+            color: var(--success);
+        }
+
+        /* ===== Utility ===== */
+        .hidden { display: none !important; }
+        .mt-8 { margin-top: 8px; }
+        .mt-16 { margin-top: 16px; }
+        .mb-8 { margin-bottom: 8px; }
+        .text-center { text-align: center; }
+        .text-secondary { color: var(--text-secondary); }
+
+        /* 滚动条美化 */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3a3a5a; }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+    <h1>🕵️ 数字<span>影子</span></h1>
+    <p>基于公开微博数据，AI 驱动的个人数字画像分析</p>
+</div>
+
+<div class="container">
+
+    <!-- 错误提示 -->
+    <div id="alert" class="alert alert-error"></div>
+
+    <!-- Step 1: UID 输入 -->
+    <div class="card" id="step1">
+        <div class="card-title">
+            <div class="icon icon-blue">🔍</div>
+            选择目标用户
+        </div>
+        <p style="color:var(--text-secondary);font-size:0.88rem;margin-bottom:10px">
+            输入微博 UID（推荐，更稳定）
+        </p>
+        <div style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:10px;background:var(--bg-input);padding:10px 14px;border-radius:8px;line-height:1.7">
+            💡 打开微博网页版 → 进入用户主页 → 地址栏 <code style="background:var(--bg-primary);padding:2px 6px;border-radius:4px;color:var(--accent)">weibo.com/u/<strong>1749127163</strong></code> → 后面的数字就是 UID
+        </div>
+        <div style="display:flex;gap:10px">
+            <input type="text" id="uidInput" placeholder="例如：1749127163" style="flex:1">
+            <button type="button" class="btn btn-primary" id="uidConfirmBtn" onclick="loadUser()">确认</button>
+        </div>
+        <div id="userPreview" class="mt-16"></div>
+    </div>
+
+    <!-- Step 2: 参数 -->
+    <div class="card hidden" id="step2">
+        <div class="card-title">
+            <div class="icon icon-green">⚙️</div>
+            分析参数
+        </div>
+        <div class="slider-row">
+            <label>获取微博数</label>
+            <input type="range" id="maxPosts" min="5" max="100" step="5" value="20" oninput="document.getElementById('maxPostsVal').textContent=this.value">
+            <span class="val" id="maxPostsVal">20</span>
+        </div>
+    </div>
+
+    <!-- Step 3: 开始分析 -->
+    <div class="card hidden" id="step3">
+        <div class="card-title">
+            <div class="icon icon-yellow">🚀</div>
+            开始分析
+        </div>
+        <div id="selectedUser" class="mb-8"></div>
+        <button class="btn btn-primary" id="analyzeBtn" onclick="startAnalysis()" style="width:100%;padding:14px;font-size:1rem;">
+            生成数字影子报告
+        </button>
+        <div id="progressArea" class="hidden mt-16">
+            <div class="progress-bar"><div class="fill" id="progressFill" style="width:0%"></div></div>
+            <div class="progress-text" id="progressText">准备中...</div>
+        </div>
+    </div>
+
+    <!-- Step 4: 报告 -->
+    <div class="card hidden" id="step4">
+        <div class="card-title">
+            <div class="icon icon-red">📊</div>
+            分析报告
+        </div>
+        <div class="report-meta" id="reportMeta"></div>
+        <div class="report-content" id="reportContent"></div>
+        <div class="mt-16" id="reportActions"></div>
+    </div>
+
+    <!-- Step 4b: 互动关系图谱 -->
+    <div class="card hidden" id="step4b">
+        <div class="card-title">
+            <div class="icon icon-yellow">🕸️</div>
+            互动关系图谱
+        </div>
+        <div id="mentionsContent"><p class="text-secondary text-center"><span class="spinner"></span> 加载中...</p></div>
+    </div>
+
+    <!-- Step 4c: 多平台线索 -->
+    <div class="card hidden" id="step4c">
+        <div class="card-title">
+            <div class="icon icon-green">🔗</div>
+            多平台线索
+        </div>
+        <div id="socialLinksContent"><p class="text-secondary text-center"><span class="spinner"></span> 加载中...</p></div>
+    </div>
+
+    <!-- Step 5: 追问 -->
+    <div class="card hidden" id="step5">
+        <div class="card-title">
+            <div class="icon icon-blue">💬</div>
+            追问补充
+        </div>
+        <textarea id="followUpInput" placeholder="输入补充信息或追问，例如：这个用户是科技创业者，补充行业背景..."></textarea>
+        <button class="btn btn-outline mt-8" onclick="followUp()" style="width:100%">🔄 继续分析</button>
+        <div id="followUpResult" class="mt-16"></div>
+    </div>
+
+    <!-- Step 5b: 手动补充数据 -->
+    <div class="card hidden" id="step5b">
+        <div class="card-title">
+            <div class="icon icon-yellow">📎</div>
+            手动补充数据
+        </div>
+        <p style="color:var(--text-secondary);font-size:0.88rem;margin-bottom:12px">
+            从其他平台（Twitter/X、B站、小红书等）复制帖子内容粘贴到这里，AI 会结合微博数据生成更完整的跨平台画像。
+        </p>
+        <div class="input-group" style="margin-bottom:10px">
+            <select id="platformSelect" style="background:var(--bg-input);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text-primary);font-size:0.9rem;outline:none">
+                <option value="other">其他平台</option>
+                <option value="twitter">Twitter / X</option>
+                <option value="bilibili">B站</option>
+                <option value="xiaohongshu">小红书</option>
+                <option value="douyin">抖音</option>
+                <option value="instagram">Instagram</option>
+            </select>
+        </div>
+        <textarea id="supplementInput" placeholder="粘贴其他平台的帖子内容，可以粘贴多条，用空行分隔..." style="min-height:120px"></textarea>
+        <button class="btn btn-primary mt-8" onclick="supplementAnalysis()" style="width:100%">📎 补充分析</button>
+        <div id="supplementResult" class="mt-16"></div>
+    </div>
+
+</div>
+
+<div class="footer">
+    数字影子 · 基于公开数据生成 · 仅供参考
+</div>
+
+<script>
+// ===== 全局状态 =====
+let selectedUser = null;  // { uid, screen_name }
+
+// ===== 工具函数 =====
+function escapeHTML(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+function showAlert(msg, type = 'error') {
+    const el = document.getElementById('alert');
+    el.textContent = msg;
+    el.className = `alert alert-${type}`;
+    el.style.display = 'block';
+    setTimeout(() => { el.style.display = 'none'; }, 5000);
+}
+
+function show(id) {
+    document.getElementById(id).classList.remove('hidden');
+}
+function hide(id) {
+    document.getElementById(id).classList.add('hidden');
+}
+
+function setProgress(pct, text) {
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressText').textContent = text;
+}
+
+function setLoading(btn, loading) {
+    if (loading) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> 处理中...';
+    } else {
+        btn.disabled = false;
+        btn.innerHTML = btn.dataset.originalText || '提交';
+    }
+}
+
+// ===== 选择用户（通过搜索或UID输入触发） =====
+async function selectUser(uid, name) {
+    try {
+        const r = await fetch('/api/user_info', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({uid})
+        });
+        const d = await r.json();
+        if (d.ok) {
+            selectedUser = {
+                uid, screen_name: name,
+                description: d.data.description,
+                followers_count: d.data.followers_count,
+                follow_count: d.data.follow_count,
+                statuses_count: d.data.statuses_count,
+            };
+            onUserSelected();
+        } else {
+            showAlert(d.error);
+        }
+    } catch(e) {
+        showAlert('获取用户信息失败：' + e.message);
+    }
+}
+
+// ===== 加载用户（UID 输入） =====
+async function loadUser() {
+    const raw = document.getElementById('uidInput').value.trim();
+    const m = raw.match(/\d{5,}/);
+    const uid = m ? m[0] : raw;
+
+    if (!uid || !/^\d+$/.test(uid)) {
+        showAlert('请输入有效的微博 UID（纯数字），例如：1749127163');
+        return;
+    }
+
+    const btn = document.getElementById('uidConfirmBtn');
+    const original = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '加载中...';
+    document.getElementById('userPreview').innerHTML = '';
+
+    try {
+        const r = await fetch('/api/user_info', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({uid})
+        });
+        const d = await r.json();
+        if (d.ok) {
+            selectedUser = {
+                uid: uid,
+                screen_name: d.data.screen_name,
+                description: d.data.description,
+                followers_count: d.data.followers_count,
+                follow_count: d.data.follow_count,
+                statuses_count: d.data.statuses_count,
+            };
+            onUserSelected();
+        } else {
+            showAlert(d.error || '获取用户信息失败');
+        }
+    } catch(e) {
+        showAlert('请求失败：' + e.message);
+    }
+    btn.disabled = false;
+    btn.textContent = original;
+}
+
+function onUserSelected() {
+    const u = selectedUser;
+    const name = escapeHTML(u.screen_name || '');
+    const uidStr = escapeHTML(String(u.uid));
+    const stats = `${u.followers_count?.toLocaleString() || 0} 粉丝 · 📝 ${u.statuses_count?.toLocaleString() || 0} 微博 · UID: ${uidStr}`;
+    document.getElementById('userPreview').innerHTML = `
+        <div class="user-item" style="margin-bottom:0">
+            <div class="user-avatar">${name.charAt(0)}</div>
+            <div class="user-info">
+                <div class="user-name">${name}</div>
+                <div class="user-stats">${stats}</div>
+            </div>
+        </div>`;
+    document.getElementById('selectedUser').innerHTML = `
+        <div class="user-item" style="margin-bottom:0">
+            <div class="user-avatar">${name.charAt(0)}</div>
+            <div class="user-info">
+                <div class="user-name">${name}</div>
+                <div class="user-stats">${stats}</div>
+            </div>
+        </div>`;
+    show('step2');
+    show('step3');
+    hide('step4');
+    hide('step5');
+    document.getElementById('step2').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ===== 开始分析 =====
+async function startAnalysis() {
+    if (!selectedUser) { showAlert('请先选择用户'); return; }
+
+    const maxPosts = parseInt(document.getElementById('maxPosts').value);
+    const btn = document.getElementById('analyzeBtn');
+    btn.dataset.originalText = btn.textContent;
+    setLoading(btn, true);
+
+    show('progressArea');
+    setProgress(10, '正在获取用户微博...');
+
+    try {
+        // 1. 获取微博
+        const r1 = await fetch('/api/posts', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({uid: selectedUser.uid, max_posts: maxPosts})
+        });
+        const d1 = await r1.json();
+        if (!d1.ok) { throw new Error(d1.error); }
+
+        const posts = d1.data;
+        setProgress(40, `获取到 ${posts.length} 条微博，正在生成分析报告...`);
+
+        // 2. 获取完整用户信息（含性别、地区等）
+        const r2 = await fetch('/api/user_info', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({uid: selectedUser.uid})
+        });
+        const d2 = await r2.json();
+        if (!d2.ok) { throw new Error(d2.error); }
+        const userInfo = {...d2.data, uid: selectedUser.uid};
+        const requestedCount = maxPosts;
+
+        setProgress(60, 'AI 正在分析中，请稍候（约 30-60 秒）...');
+
+        // 3. 生成报告
+        const r3 = await fetch('/api/analyze', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({user_info: userInfo, posts: posts})
+        });
+        const d3 = await r3.json();
+        if (!d3.ok) { throw new Error(d3.error); }
+
+        setProgress(100, '完成！');
+        setTimeout(() => { hide('progressArea'); }, 500);
+
+        // 渲染报告
+        renderReport(userInfo, posts, d3.data, requestedCount);
+        setLoading(btn, false);
+
+    } catch(e) {
+        setLoading(btn, false);
+        hide('progressArea');
+        showAlert('分析失败：' + e.message);
+    }
+}
+
+// ===== 渲染报告 =====
+function renderReport(userInfo, posts, report, requestedCount) {
+    // 如果报告内容以"分析失败"开头，显示错误
+    if (report.startsWith('分析失败')) {
+        show('step4');
+        document.getElementById('reportContent').innerHTML =
+            `<div class="alert alert-error" style="display:block">${escapeHTML(report)}</div>`;
+        return;
+    }
+
+    show('step4');
+    show('step5');
+    show('step5b');
+
+    const name = escapeHTML(userInfo.screen_name || '');
+    document.getElementById('reportMeta').innerHTML = `
+        <div class="meta-item"><span>用户：</span><strong>${name}</strong></div>
+        <div class="meta-item"><span>粉丝：</span>${userInfo.followers_count?.toLocaleString() || 0}</div>
+        <div class="meta-item"><span>微博：</span>${userInfo.statuses_count?.toLocaleString() || 0}</div>
+        <div class="meta-item"><span>性别：</span>${userInfo.gender || '未知'}</div>
+        <div class="meta-item"><span>地区：</span>${userInfo.city || '未知'}</div>
+        <div class="meta-item"><span>样本：</span>${posts.length} 条微博${requestedCount !== posts.length ? `（请求 ${requestedCount} 条，实际获取 ${posts.length} 条）` : ''}</div>
+    `;
+
+    // Markdown 简单渲染（支持标题、列表、粗体、引用）
+    document.getElementById('reportContent').innerHTML = simpleMarkdown(report);
+
+    // 下载按钮 - 使用服务端下载
+    document.getElementById('reportActions').innerHTML = `
+        <button class="btn btn-primary" onclick="downloadReport()" style="width:100%">📥 下载报告 (TXT)</button>
+    `;
+
+    // 存报告和帖子到 localStorage 用于追问和下载
+    localStorage.setItem('last_report', report);
+    localStorage.setItem('last_user', JSON.stringify(userInfo));
+    localStorage.setItem('last_posts', JSON.stringify(posts));
+
+    // 异步加载互动关系和多平台线索
+    loadMentions(userInfo.uid);
+    loadSocialLinks(userInfo.uid);
+
+    document.getElementById('step4').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ===== 加载互动关系图谱 =====
+async function loadMentions(uid) {
+    show('step4b');
+    const container = document.getElementById('mentionsContent');
+    try {
+        const r = await fetch('/api/mentions', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({uid, top_n: 10})
+        });
+        const d = await r.json();
+        if (d.ok && d.data.length > 0) {
+            let html = '';
+            d.data.forEach((m, i) => {
+                const pct = Math.max(8, (m.count / d.data[0].count) * 100);
+                html += `
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+                    <span style="min-width:28px;text-align:right;font-weight:700;color:var(--accent)">${i+1}</span>
+                    <span style="flex:1;font-weight:600">@${escapeHTML(m.screen_name)}</span>
+                    <span style="color:var(--text-secondary);font-size:0.85rem">${m.count} 次提及</span>
+                </div>
+                <div class="progress-bar" style="margin-bottom:14px"><div class="fill" style="width:${pct}%"></div></div>`;
+            });
+            container.innerHTML = html;
+        } else {
+            container.innerHTML = '<p class="text-secondary text-center">未发现 @提及 记录</p>';
+        }
+    } catch(e) {
+        container.innerHTML = '<p class="text-secondary text-center">加载失败</p>';
+    }
+}
+
+// ===== 加载多平台线索 =====
+async function loadSocialLinks(uid) {
+    show('step4c');
+    const container = document.getElementById('socialLinksContent');
+    try {
+        const r = await fetch('/api/social_links', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({uid})
+        });
+        const d = await r.json();
+        if (d.ok) {
+            const links = d.data;
+            const platformInfo = {
+                twitter: { name: 'Twitter / X', icon: '🐦', color: '#1da1f2' },
+                instagram: { name: 'Instagram', icon: '📸', color: '#e4405f' },
+                bilibili: { name: 'B站', icon: '📺', color: '#00a1d6' },
+                xiaohongshu: { name: '小红书', icon: '📕', color: '#ff2442' },
+                douyin: { name: '抖音', icon: '🎵', color: '#000000' },
+            };
+            let html = '';
+            let hasAny = false;
+            for (const [key, info] of Object.entries(platformInfo)) {
+                const items = links[key] || [];
+                if (items.length > 0) {
+                    hasAny = true;
+                    html += `<div style="margin-bottom:14px">
+                        <div style="font-weight:700;margin-bottom:6px">${info.icon} ${info.name}</div>
+                        <div style="display:flex;flex-wrap:wrap;gap:6px">`;
+                    items.forEach(item => {
+                        html += `<span style="background:var(--bg-input);padding:4px 12px;border-radius:6px;font-size:0.85rem;font-family:monospace">${escapeHTML(item)}</span>`;
+                    });
+                    html += `</div></div>`;
+                }
+            }
+            if (hasAny) {
+                container.innerHTML = html + '<p style="color:var(--text-secondary);font-size:0.82rem;margin-top:8px">⚠️ 以上为微博内容中匹配到的线索，不一定属于该用户本人</p>';
+            } else {
+                container.innerHTML = '<p class="text-secondary text-center">未发现其他平台账号线索</p>';
+            }
+        } else {
+            container.innerHTML = '<p class="text-secondary text-center">加载失败</p>';
+        }
+    } catch(e) {
+        container.innerHTML = '<p class="text-secondary text-center">加载失败</p>';
+    }
+}
+
+// ===== 追问 =====
+async function followUp() {
+    const input = document.getElementById('followUpInput').value.trim();
+    if (!input) { showAlert('请输入补充信息'); return; }
+
+    const prev = localStorage.getItem('last_report');
+    if (!prev) { showAlert('请先生成报告'); return; }
+
+    const container = document.getElementById('followUpResult');
+    container.innerHTML = '<p class="text-secondary text-center"><span class="spinner"></span> 分析中...</p>';
+
+    try {
+        const r = await fetch('/api/continue', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({previous_report: prev, new_info: input})
+        });
+        const d = await r.json();
+        if (d.ok) {
+            localStorage.setItem('last_report', d.data);
+            container.innerHTML = `<div class="report-content">${simpleMarkdown(d.data)}</div>`;
+        } else {
+            container.innerHTML = `<div class="alert alert-error" style="display:block">${d.error}</div>`;
+        }
+    } catch(e) {
+        container.innerHTML = `<div class="alert alert-error" style="display:block">请求失败：${e.message}</div>`;
+    }
+}
+
+// ===== 手动补充数据 =====
+async function supplementAnalysis() {
+    const platform = document.getElementById('platformSelect').value;
+    const content = document.getElementById('supplementInput').value.trim();
+    if (!content) { showAlert('请粘贴补充内容'); return; }
+
+    const prev = localStorage.getItem('last_report');
+    if (!prev) { showAlert('请先生成报告'); return; }
+
+    const platformNames = {
+        twitter: 'Twitter/X',
+        bilibili: 'B站',
+        xiaohongshu: '小红书',
+        douyin: '抖音',
+        instagram: 'Instagram',
+        other: '其他平台',
+    };
+    const platformName = platformNames[platform] || '其他平台';
+
+    const container = document.getElementById('supplementResult');
+    container.innerHTML = '<p class="text-secondary text-center"><span class="spinner"></span> 补充分析中...</p>';
+
+    const supplementPrompt = `以下是来自 ${platformName} 的补充数据（用户手动提供）：\n\n${content}\n\n请将以上补充数据与之前的微博分析报告进行融合，更新报告中涉及以下方面的内容：\n1. 如果补充数据揭示了新的兴趣领域或行为特征，更新「兴趣爱好与关注领域」章节\n2. 如果补充数据展示了不同的表达风格，更新「语言与表达特征」章节\n3. 如果补充数据包含社交互动信息，更新「社交网络特征」和「互动关系图谱」章节\n4. 如果补充数据与微博中的内容形成呼应或反差，在「人物总画像」中标注\n5. 在报告末尾注明「补充数据来源：${platformName}（用户手动提供）」\n\n保持原有报告的结构和风格，只在有新信息的地方进行补充和修正，不要重写整篇报告。`;
+
+    try {
+        const r = await fetch('/api/continue', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({previous_report: prev, new_info: supplementPrompt})
+        });
+        const d = await r.json();
+        if (d.ok) {
+            localStorage.setItem('last_report', d.data);
+            container.innerHTML = `<div class="report-content">${simpleMarkdown(d.data)}</div>`;
+        } else {
+            container.innerHTML = `<div class="alert alert-error" style="display:block">${d.error}</div>`;
+        }
+    } catch(e) {
+        container.innerHTML = `<div class="alert alert-error" style="display:block">请求失败：${e.message}</div>`;
+    }
+}
+
+function downloadReport() {
+    const report = localStorage.getItem('last_report') || '';
+    const user = JSON.parse(localStorage.getItem('last_user') || '{}');
+    let posts = [];
+    try { posts = JSON.parse(localStorage.getItem('last_posts') || '[]'); } catch(e) {}
+    const uid = user.uid || (selectedUser ? selectedUser.uid : '');
+    const name = user.screen_name || selectedUser?.screen_name || 'unknown';
+    if (!report) { showAlert('报告内容为空'); return; }
+    fetch('/api/export', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({user_info: Object.assign({}, user, {uid: uid}), posts: posts, report: report})
+    }).then(r => {
+        if (!r.ok) throw new Error('服务器返回错误: ' + r.status);
+        return r.blob();
+    })
+      .then(blob => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          const ts = new Date().toISOString().slice(0,19).replace(/[T:]/g, '');
+          a.download = '数字影子_' + name + '_' + ts + '.txt';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+      }).catch(e => showAlert('下载失败：' + e.message));
+}
+
+// ===== 简单 Markdown 渲染 =====
+function simpleMarkdown(text) {
+    if (!text) return '';
+    let html = text
+        // 转义 HTML
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        // 代码块
+        .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+        // 行内代码
+        .replace(/`([^`]+)`/g, '<code style="background:var(--bg-input);padding:2px 6px;border-radius:4px;font-size:0.88em">$1</code>')
+        // 标题
+        .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+        .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+        .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+        // 分隔线
+        .replace(/^---$/gm, '<hr>')
+        // 引用
+        .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
+        // 粗体
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        // 无序列表
+        .replace(/^- (.+)$/gm, '<li>$1</li>')
+        // 有序列表
+        .replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
+        // 段落
+        .replace(/\n\n/g, '</p><p>')
+        // 单换行
+        .replace(/\n/g, '<br>');
+
+    // 把连续的 <li> 包进 <ul>
+    html = html.replace(/((?:<li>.*?<\/li><br>?)+)/g, function(match) {
+        return '<ul>' + match.replace(/<br>/g, '') + '</ul>';
+    });
+
+    return '<p>' + html + '</p>';
+}
+
+</script>
+
+</body>
+</html>
